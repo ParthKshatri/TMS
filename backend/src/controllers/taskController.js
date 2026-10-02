@@ -4,41 +4,70 @@ const User = require('../models/User');
 
 const createTask = async (req, res, next) => {
   try {
-    const { title, description, assignee, dueDate } = req.body;
+    const { title, description, assignee, assignees, dueDate } = req.body;
 
-    const employee = await User.findById(assignee);
-    if (!employee || employee.role !== 'employee' || !employee.isActive) {
+    let assigneeIds = [];
+    if (Array.isArray(assignees) && assignees.length > 0) {
+      assigneeIds = [...new Set(assignees.filter(Boolean))];
+    } else if (assignee) {
+      assigneeIds = [assignee];
+    }
+
+    if (assigneeIds.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or inactive employee assignee.'
+        message: 'Please select at least one employee assignee.'
       });
     }
 
-    const task = await Task.create({
-      title: title.trim(),
-      description: description.trim(),
-      assignee,
-      createdBy: req.user._id,
-      dueDate: dueDate ? new Date(dueDate) : undefined,
-      status: 'pending'
+    const validEmployees = await User.find({
+      _id: { $in: assigneeIds },
+      role: 'employee',
+      isActive: true
     });
 
-    await TaskStatusHistory.create({
-      task: task._id,
-      changedBy: req.user._id,
-      fromStatus: 'none',
-      toStatus: 'pending',
-      changedAt: new Date()
-    });
+    if (validEmployees.length !== assigneeIds.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'One or more selected employees are invalid or inactive.'
+      });
+    }
 
-    const populatedTask = await Task.findById(task._id)
+    const createdTaskIds = [];
+    const historyEntries = [];
+    const now = new Date();
+
+    for (const empId of assigneeIds) {
+      const task = await Task.create({
+        title: title.trim(),
+        description: description.trim(),
+        assignee: empId,
+        createdBy: req.user._id,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        status: 'pending'
+      });
+      createdTaskIds.push(task._id);
+
+      historyEntries.push({
+        task: task._id,
+        changedBy: req.user._id,
+        fromStatus: 'none',
+        toStatus: 'pending',
+        changedAt: now
+      });
+    }
+
+    await TaskStatusHistory.insertMany(historyEntries);
+
+    const populatedTasks = await Task.find({ _id: { $in: createdTaskIds } })
       .populate('assignee', 'name email')
       .populate('createdBy', 'name email');
 
     res.status(201).json({
       success: true,
-      message: 'Task created successfully.',
-      task: populatedTask
+      message: `Task successfully assigned to ${populatedTasks.length} employee(s).`,
+      tasks: populatedTasks,
+      task: populatedTasks[0]
     });
   } catch (error) {
     next(error);

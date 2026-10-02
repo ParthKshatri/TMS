@@ -21,7 +21,7 @@ const AdminTasksPage = () => {
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [taskForm, setTaskForm] = useState({ title: '', description: '', assignee: '', dueDate: '' });
+  const [taskForm, setTaskForm] = useState({ title: '', description: '', assignees: [], dueDate: '' });
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,16 +66,47 @@ const AdminTasksPage = () => {
     fetchTasks(1);
   }, [search, statusFilter, employeeFilter]);
 
+  const handleToggleEmployee = (empId) => {
+    setTaskForm((prev) => {
+      const exists = prev.assignees.includes(empId);
+      const updatedAssignees = exists
+        ? prev.assignees.filter((id) => id !== empId)
+        : [...prev.assignees, empId];
+      return { ...prev, assignees: updatedAssignees };
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    setTaskForm((prev) => {
+      const allSelected = prev.assignees.length === employees.length;
+      return {
+        ...prev,
+        assignees: allSelected ? [] : employees.map((e) => e._id)
+      };
+    });
+  };
+
   const handleCreateTask = async (e) => {
     e.preventDefault();
     setFormError('');
+
+    if (taskForm.assignees.length === 0) {
+      setFormError('Please select at least one employee to assign the task to.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const res = await api.post('/tasks', taskForm);
+      const res = await api.post('/tasks', {
+        title: taskForm.title,
+        description: taskForm.description,
+        assignees: taskForm.assignees,
+        dueDate: taskForm.dueDate
+      });
       if (res.data.success) {
         setIsModalOpen(false);
-        setTaskForm({ title: '', description: '', assignee: '', dueDate: '' });
+        setTaskForm({ title: '', description: '', assignees: [], dueDate: '' });
         fetchTasks(1);
       }
     } catch (err) {
@@ -208,7 +239,7 @@ const AdminTasksPage = () => {
               onClick={handleCreateTask}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating...' : 'Assign task'}
+              {isSubmitting ? 'Creating...' : `Assign task (${taskForm.assignees.length})`}
             </button>
           </>
         }
@@ -231,23 +262,78 @@ const AdminTasksPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="assignee">
-              Assign to Employee
-            </label>
-            <select
-              id="assignee"
-              className="form-select"
-              value={taskForm.assignee}
-              onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
-              required
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <label className="form-label" style={{ marginBottom: 0 }}>
+                Assign to Employee(s) {taskForm.assignees.length > 0 && (
+                  <span style={{ color: 'var(--color-primary)', fontWeight: '600' }}>({taskForm.assignees.length} selected)</span>
+                )}
+              </label>
+              {employees.length > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.8rem', padding: '0.2rem 0.6rem' }}
+                  onClick={handleToggleSelectAll}
+                >
+                  {taskForm.assignees.length === employees.length ? 'Deselect All' : 'Select All'}
+                </button>
+              )}
+            </div>
+
+            <div
+              style={{
+                maxHeight: '180px',
+                overflowY: 'auto',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.5rem',
+                backgroundColor: 'var(--color-bg)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.35rem'
+              }}
             >
-              <option value="">Select an employee...</option>
-              {employees.map((emp) => (
-                <option key={emp._id} value={emp._id}>
-                  {emp.name} ({emp.email})
-                </option>
-              ))}
-            </select>
+              {employees.length === 0 ? (
+                <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', padding: '0.5rem' }}>
+                  No active employees found.
+                </p>
+              ) : (
+                employees.map((emp) => {
+                  const isChecked = taskForm.assignees.includes(emp._id);
+                  return (
+                    <label
+                      key={emp._id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: isChecked ? 'var(--color-primary-light)' : '#ffffff',
+                        border: isChecked ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleEmployee(emp._id)}
+                        style={{ accentColor: 'var(--color-primary)', width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: '500', fontSize: '0.9rem', color: 'var(--color-text-main)' }}>
+                          {emp.name}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                          {emp.email}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })
+              )}
+            </div>
           </div>
 
           <div className="form-group">

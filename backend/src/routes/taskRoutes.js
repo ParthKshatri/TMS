@@ -16,7 +16,28 @@ router.post(
   [
     body('title').trim().notEmpty().withMessage('Task title is required.'),
     body('description').trim().notEmpty().withMessage('Task description is required.'),
-    body('assignee').isMongoId().withMessage('Valid employee assignee ID is required.'),
+    body('assignee')
+      .optional()
+      .isMongoId()
+      .withMessage('Valid employee assignee ID is required.'),
+    body('assignees')
+      .optional()
+      .isArray({ min: 1 })
+      .withMessage('Assignees must be an array with at least one employee.')
+      .custom((value) => {
+        if (value && !value.every((id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id))) {
+          throw new Error('All assignee IDs must be valid Mongo ObjectIds.');
+        }
+        return true;
+      }),
+    body().custom((reqBody) => {
+      const hasAssignee = reqBody.assignee && typeof reqBody.assignee === 'string';
+      const hasAssignees = Array.isArray(reqBody.assignees) && reqBody.assignees.length > 0;
+      if (!hasAssignee && !hasAssignees) {
+        throw new Error('Please select at least one employee assignee.');
+      }
+      return true;
+    }),
     body('dueDate').optional({ checkFalsy: true }).isISO8601().withMessage('Valid due date is required.'),
     validate
   ],
