@@ -111,8 +111,48 @@ const getUserDetails = async (req, res, next) => {
   }
 };
 
+const toggleEmployeeStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found.'
+      });
+    }
+
+    if (user.role !== 'employee') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only employee accounts can be enabled or disabled.'
+      });
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: `Employee account ${user.isActive ? 'activated' : 'disabled'} successfully.`,
+      employee: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEmployees,
   createEmployee,
-  getUserDetails
+  getUserDetails,
+  toggleEmployeeStatus
 };

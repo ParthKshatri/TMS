@@ -17,6 +17,7 @@ const calculateDuration = (login, logout) => {
 
 const EmployeeAttendancePage = () => {
   const [todayAttendance, setTodayAttendance] = useState(null);
+  const [todayLoading, setTodayLoading] = useState(true);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -28,12 +29,15 @@ const EmployeeAttendancePage = () => {
 
   const fetchTodayAttendance = async () => {
     try {
+      setTodayLoading(true);
       const res = await api.get('/attendance/today');
       if (res.data.success) {
         setTodayAttendance(res.data.attendance);
       }
     } catch (err) {
       console.error('Failed to load today attendance:', err);
+    } finally {
+      setTodayLoading(false);
     }
   };
 
@@ -114,56 +118,62 @@ const EmployeeAttendancePage = () => {
           </span>
         </div>
         <div className="card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
-            <div>
-              {!todayAttendance ? (
-                <div>
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#0f172a' }}>
-                    Shift Not Started
-                  </h4>
-                  <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
-                    Click Clock in to start recording your login time for today.
-                  </p>
-                </div>
-              ) : !todayAttendance.logoutTime ? (
-                <div>
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#16a34a' }}>
-                    Active Work Shift
-                  </h4>
-                  <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
-                    Clocked in at <strong>{new Date(todayAttendance.loginTime).toLocaleTimeString()}</strong>
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2563eb' }}>
-                    Shift Complete
-                  </h4>
-                  <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
-                    Clocked in: {new Date(todayAttendance.loginTime).toLocaleTimeString()} | Clocked out: {new Date(todayAttendance.logoutTime).toLocaleTimeString()}
-                  </p>
-                </div>
-              )}
+          {todayLoading ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', color: 'var(--color-text-muted)' }}>
+              <LoadingSpinner text="Checking shift status..." />
             </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
+              <div>
+                {!todayAttendance ? (
+                  <div>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#0f172a' }}>
+                      Shift Not Started
+                    </h4>
+                    <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
+                      Click Clock in to start recording your login time for today.
+                    </p>
+                  </div>
+                ) : !todayAttendance.logoutTime ? (
+                  <div>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#16a34a' }}>
+                      Active Work Shift
+                    </h4>
+                    <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
+                      Clocked in at <strong>{new Date(todayAttendance.loginTime).toLocaleTimeString()}</strong>
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2563eb' }}>
+                      Shift Complete
+                    </h4>
+                    <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
+                      Clocked in: {new Date(todayAttendance.loginTime).toLocaleTimeString()} | Clocked out: {new Date(todayAttendance.logoutTime).toLocaleTimeString()}
+                    </p>
+                  </div>
+                )}
+              </div>
 
-            <div>
-              {!todayAttendance ? (
-                <button className="btn btn-primary" onClick={handleClockIn} disabled={actionLoading}>
-                  <Clock size={18} />
-                  Clock in now
-                </button>
-              ) : !todayAttendance.logoutTime ? (
-                <button className="btn btn-secondary" onClick={handleClockOut} disabled={actionLoading}>
-                  <Clock size={18} />
-                  Clock out now
-                </button>
-              ) : (
-                <span className="status-badge approved" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-                  Recorded for Today
-                </span>
-              )}
+              <div>
+                {!todayAttendance ? (
+                  <button className="btn btn-primary" onClick={handleClockIn} disabled={actionLoading}>
+                    <Clock size={18} />
+                    Clock in now
+                  </button>
+                ) : !todayAttendance.logoutTime ? (
+                  <button className="btn btn-secondary" onClick={handleClockOut} disabled={actionLoading}>
+                    <Clock size={18} />
+                    Clock out now
+                  </button>
+                ) : (
+                  <span className="status-badge approved" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+                    Recorded for Today
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

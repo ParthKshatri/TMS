@@ -5,13 +5,14 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import Modal from '../components/Modal';
 import api from '../api/axios';
-import { Plus, Search, Users, Eye } from 'lucide-react';
+import { Plus, Search, Users, Eye, UserX, UserCheck } from 'lucide-react';
 
 const AdminEmployeesPage = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, pages: 1, total: 0 });
   const [search, setSearch] = useState('');
+  const [togglingId, setTogglingId] = useState(null);
 
   // Create employee modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +46,30 @@ const AdminEmployeesPage = () => {
   useEffect(() => {
     fetchEmployees(1);
   }, [search]);
+
+  const handleToggleStatus = async (empId) => {
+    try {
+      setTogglingId(empId);
+      const res = await api.patch(`/users/${empId}/status`);
+      if (res.data.success) {
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            emp._id === empId ? { ...emp, isActive: res.data.employee.isActive } : emp
+          )
+        );
+        if (selectedUserStats && selectedUserStats.user._id === empId) {
+          setSelectedUserStats((prev) => ({
+            ...prev,
+            user: { ...prev.user, isActive: res.data.employee.isActive }
+          }));
+        }
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update employee account status.');
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   const handleCreateEmployee = async (e) => {
     e.preventDefault();
@@ -126,7 +151,7 @@ const AdminEmployeesPage = () => {
                   <th>Email Address</th>
                   <th>Account Status</th>
                   <th>Created Date</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -141,13 +166,37 @@ const AdminEmployeesPage = () => {
                     </td>
                     <td>{new Date(emp.createdAt).toLocaleDateString()}</td>
                     <td>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => handleViewDetails(emp._id)}
-                      >
-                        <Eye size={16} />
-                        View summary
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleViewDetails(emp._id)}
+                        >
+                          <Eye size={15} />
+                          View summary
+                        </button>
+
+                        <button
+                          className="btn btn-sm"
+                          style={{
+                            padding: '0.35rem 0.65rem',
+                            fontSize: '0.8rem',
+                            borderRadius: 'var(--radius-sm)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            fontWeight: '500',
+                            border: emp.isActive ? '1px solid #fca5a5' : '1px solid #86efac',
+                            color: emp.isActive ? '#dc2626' : '#16a34a',
+                            backgroundColor: emp.isActive ? '#fef2f2' : '#f0fdf4',
+                            cursor: togglingId === emp._id ? 'not-allowed' : 'pointer'
+                          }}
+                          onClick={() => handleToggleStatus(emp._id)}
+                          disabled={togglingId === emp._id}
+                        >
+                          {emp.isActive ? <UserX size={15} /> : <UserCheck size={15} />}
+                          {togglingId === emp._id ? 'Updating...' : emp.isActive ? 'Disable Account' : 'Enable Account'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

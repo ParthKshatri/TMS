@@ -25,5 +25,6 @@ router.post(
 );
 
 router.get('/:id', userController.getUserDetails);
+router.patch('/:id/status', userController.toggleEmployeeStatus);
 
 module.exports = router;
