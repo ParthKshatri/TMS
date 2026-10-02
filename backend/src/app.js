@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -33,6 +35,22 @@ app.use(createSessionConfig());
 
 // Mount API routes
 app.use('/api', routes);
+
+// Serve built static frontend files in production or if dist directory exists
+const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'), (err) => {
+      if (err) {
+        next(err);
+      }
+    });
+  });
+}
 
 // Centralized error handling
 app.use(errorHandler);
