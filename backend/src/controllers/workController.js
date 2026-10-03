@@ -4,45 +4,77 @@ const TaskStatusHistory = require('../models/TaskStatusHistory');
 
 const submitWork = async (req, res, next) => {
   try {
-    const { taskId, description } = req.body;
+    const { taskId, title, taskTitle, description } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) {
-      return res.status(404).json({
+    if (!description || !description.trim()) {
+      return res.status(400).json({
         success: false,
-        message: 'Task not found.'
+        message: 'Submission description is required.'
       });
     }
 
-    if (task.assignee.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. You can only submit work for tasks assigned to you.'
+    let targetTaskId = taskId;
+
+    if (targetTaskId) {
+      const task = await Task.findById(targetTaskId);
+      if (!task) {
+        return res.status(404).json({
+          success: false,
+          message: 'Task not found.'
+        });
+      }
+
+      if (task.assignee.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. You can only submit work for tasks assigned to you.'
+        });
+      }
+
+      // Update task status to completed if it wasn't completed yet
+      if (task.status !== 'completed' && task.status !== 'approved') {
+        const oldStatus = task.status;
+        task.status = 'completed';
+        await task.save();
+
+        await TaskStatusHistory.create({
+          task: task._id,
+          changedBy: req.user._id,
+          fromStatus: oldStatus,
+          toStatus: 'completed',
+          changedAt: new Date()
+        });
+      }
+    } else {
+      // Unassigned / Direct Work Submission: Create a task entry for the employee
+      const workTitle = (title || taskTitle || 'Self-Submitted Work').trim();
+      const newTask = await Task.create({
+        title: workTitle,
+        description: description.trim(),
+        assignee: req.user._id,
+        createdBy: req.user._id,
+        status: 'completed',
+        createdAt: new Date()
       });
+
+      await TaskStatusHistory.create({
+        task: newTask._id,
+        changedBy: req.user._id,
+        fromStatus: 'pending',
+        toStatus: 'completed',
+        changedAt: new Date()
+      });
+
+      targetTaskId = newTask._id;
     }
 
     const submission = await WorkSubmission.create({
-      task: taskId,
+      task: targetTaskId,
       employee: req.user._id,
       description: description.trim(),
       submittedAt: new Date(),
       reviewStatus: 'pending'
     });
-
-    // Update task status to completed if it wasn't completed yet
-    if (task.status !== 'completed' && task.status !== 'approved') {
-      const oldStatus = task.status;
-      task.status = 'completed';
-      await task.save();
-
-      await TaskStatusHistory.create({
-        task: task._id,
-        changedBy: req.user._id,
-        fromStatus: oldStatus,
-        toStatus: 'completed',
-        changedAt: new Date()
-      });
-    }
 
     const populatedSubmission = await WorkSubmission.findById(submission._id)
       .populate('task', 'title description status')

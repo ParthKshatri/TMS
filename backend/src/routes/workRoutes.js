@@ -14,7 +14,8 @@ router.post(
   '/',
   requireRole('employee'),
   [
-    body('taskId').isMongoId().withMessage('Valid task ID is required.'),
+    body('taskId').optional().isMongoId().withMessage('Valid task ID is required.'),
+    body('title').optional().trim(),
     body('description')
       .trim()
       .notEmpty()

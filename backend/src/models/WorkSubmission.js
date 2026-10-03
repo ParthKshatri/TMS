@@ -5,7 +5,7 @@ const workSubmissionSchema = new mongoose.Schema(
     task: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Task',
-      required: [true, 'Task reference is required']
+      required: false
     },
     employee: {
       type: mongoose.Schema.Types.ObjectId,

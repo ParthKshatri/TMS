@@ -6,7 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import Modal from '../components/Modal';
 import api from '../api/axios';
-import { CheckSquare, Search, Play, FileText, Eye } from 'lucide-react';
+import { CheckSquare, Search, Play, FileText, Eye, PlusCircle } from 'lucide-react';
 
 const EmployeeTasksPage = () => {
   const [tasks, setTasks] = useState([]);
@@ -17,8 +17,10 @@ const EmployeeTasksPage = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  // Submit Work Modal
-  const [selectedTask, setSelectedTask] = useState(null);
+  // Submit Work Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const [customTitle, setCustomTitle] = useState('');
   const [workDescription, setWorkDescription] = useState('');
   const [isSubmittingWork, setIsSubmittingWork] = useState(false);
   const [workError, setWorkError] = useState('');
@@ -59,20 +61,45 @@ const EmployeeTasksPage = () => {
     }
   };
 
+  const openSubmitModal = (task = null) => {
+    setWorkError('');
+    setWorkDescription('');
+    setCustomTitle('');
+    if (task) {
+      setSelectedTaskId(task._id);
+    } else {
+      setSelectedTaskId('');
+    }
+    setIsModalOpen(true);
+  };
+
   const handleSubmitWork = async (e) => {
     e.preventDefault();
-    if (!selectedTask) return;
     setWorkError('');
+
+    if (!selectedTaskId && (!customTitle || !customTitle.trim())) {
+      setWorkError('Please enter a work title/subject for unassigned work.');
+      return;
+    }
+
+    if (!workDescription || !workDescription.trim()) {
+      setWorkError('Please enter a description of the completed work.');
+      return;
+    }
+
     setIsSubmittingWork(true);
 
     try {
-      const res = await api.post('/work-submissions', {
-        taskId: selectedTask._id,
-        description: workDescription
-      });
+      const payload = selectedTaskId
+        ? { taskId: selectedTaskId, description: workDescription.trim() }
+        : { title: customTitle.trim(), description: workDescription.trim() };
+
+      const res = await api.post('/work-submissions', payload);
 
       if (res.data.success) {
-        setSelectedTask(null);
+        setIsModalOpen(false);
+        setSelectedTaskId('');
+        setCustomTitle('');
         setWorkDescription('');
         fetchTasks(pagination.page);
       }
@@ -83,13 +110,23 @@ const EmployeeTasksPage = () => {
     }
   };
 
+  const currentSelectedTaskObj = tasks.find((t) => t._id === selectedTaskId);
+
   return (
     <div className="page-container">
-      <div className="page-header">
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div className="page-title-group">
-          <h1>My Assigned Tasks</h1>
-          <p className="page-subtitle">View and update task status as work progresses</p>
+          <h1>My Tasks & Work Submissions</h1>
+          <p className="page-subtitle">Manage assigned tasks or submit completed work directly even without an assigned task</p>
         </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => openSubmitModal(null)}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <PlusCircle size={18} />
+          Submit Work (No Task)
+        </button>
       </div>
 
       <div className="filters-bar">
@@ -120,12 +157,21 @@ const EmployeeTasksPage = () => {
       </div>
 
       {loading ? (
-        <LoadingSpinner text="Fetching assigned tasks..." />
+        <LoadingSpinner text="Fetching tasks..." />
       ) : tasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
-          title="No tasks assigned yet"
-          description="You currently have no office tasks matching the selected filter."
+          title="No tasks found"
+          description="You currently have no tasks matching the filter. You can submit any completed work directly without an assigned task."
+          action={
+            <button
+              className="btn btn-primary"
+              onClick={() => openSubmitModal(null)}
+            >
+              <PlusCircle size={16} />
+              Submit Work Without Task
+            </button>
+          }
         />
       ) : (
         <div className="card">
@@ -165,11 +211,7 @@ const EmployeeTasksPage = () => {
                         {(task.status === 'pending' || task.status === 'in_progress' || task.status === 'rejected') && (
                           <button
                             className="btn btn-success btn-sm"
-                            onClick={() => {
-                              setSelectedTask(task);
-                              setWorkDescription('');
-                              setWorkError('');
-                            }}
+                            onClick={() => openSubmitModal(task)}
                           >
                             <FileText size={14} />
                             Submit work
@@ -188,12 +230,12 @@ const EmployeeTasksPage = () => {
 
       {/* Submit Work Modal */}
       <Modal
-        isOpen={!!selectedTask}
-        onClose={() => setSelectedTask(null)}
-        title={`Submit Work Description: ${selectedTask?.title || ''}`}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={selectedTaskId ? `Submit Work: ${currentSelectedTaskObj?.title || ''}` : 'Submit Work (Without Assigned Task)'}
         footer={
           <>
-            <button className="btn btn-secondary" onClick={() => setSelectedTask(null)}>
+            <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
               Cancel
             </button>
             <button
@@ -209,8 +251,45 @@ const EmployeeTasksPage = () => {
         {workError && <div className="alert-banner alert-error">{workError}</div>}
         <form onSubmit={handleSubmitWork}>
           <div className="form-group">
+            <label className="form-label" htmlFor="taskSelect">
+              Associated Task
+            </label>
+            <select
+              id="taskSelect"
+              className="form-select"
+              style={{ width: '100%' }}
+              value={selectedTaskId}
+              onChange={(e) => setSelectedTaskId(e.target.value)}
+            >
+              <option value="">-- No Assigned Task (Direct Work Submission) --</option>
+              {tasks.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.title} ({t.status.replace('_', ' ')})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {!selectedTaskId && (
+            <div className="form-group">
+              <label className="form-label" htmlFor="customTitle">
+                Work / Task Title <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <input
+                type="text"
+                id="customTitle"
+                className="form-input"
+                placeholder="e.g. Daily Activity Report, System Bug Fix, Client Call..."
+                value={customTitle}
+                onChange={(e) => setCustomTitle(e.target.value)}
+                required
+              />
+            </div>
+          )}
+
+          <div className="form-group">
             <label className="form-label" htmlFor="workDesc">
-              Description of Work Completed
+              Description of Work Completed <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <textarea
               id="workDesc"
