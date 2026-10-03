@@ -77,8 +77,8 @@ project-root/
 | `SESSION_SECRET` | Secret key for signing session cookies | `your-production-session-secret` |
 | `CLIENT_ORIGIN` | Allowed frontend origin URL | `http://localhost:5173` |
 | `SEED_ADMIN_NAME` | Initial seed administrator name | `System Administrator` |
-| `SEED_ADMIN_EMAIL` | Initial seed administrator email | `admin@tms.local` |
-| `SEED_ADMIN_PASSWORD` | Initial seed administrator password | `AdminPassword123!` |
+| `SEED_ADMIN_EMAIL` | Initial seed administrator email | `<createmail@gmail.com>` |
+| `SEED_ADMIN_PASSWORD` | Initial seed administrator password | `<createpassword>` |
 
 ### Frontend (`frontend/.env`)
 
