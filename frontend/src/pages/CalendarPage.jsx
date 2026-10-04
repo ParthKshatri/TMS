@@ -172,71 +172,74 @@ const CalendarPage = () => {
         )}
       </div>
 
-      {/* Monthly Calendar Grid */}
-      <div className="calendar-grid-card">
-        {loading ? (
-          <div style={{ padding: '2rem 0' }}>
-            <LoadingSpinner />
-          </div>
-        ) : (
-          <>
-            <div className="calendar-weekdays-grid">
-              {WEEKDAYS.map((day) => (
-                <div key={day}>{day}</div>
-              ))}
+      {/* Main Layout: Left Calendar Grid + Right Events Panel */}
+      <div className="calendar-body-layout">
+        {/* Monthly Calendar Grid */}
+        <div className="calendar-grid-card">
+          {loading ? (
+            <div style={{ padding: '2rem 0' }}>
+              <LoadingSpinner />
             </div>
-
-            <div className="calendar-days-grid">
-              {/* Empty leading slots */}
-              {Array.from({ length: firstDayIndex }).map((_, idx) => (
-                <div key={`empty-${idx}`} className="calendar-day-cell empty" />
-              ))}
-
-              {/* Days of month */}
-              {Array.from({ length: daysInMonth }).map((_, idx) => {
-                const dayNum = idx + 1;
-                const cellDateStr = formatDateStr(year, monthIndex, dayNum);
-                const isToday = cellDateStr === todayStr;
-                const isSelected = cellDateStr === selectedDateStr;
-                const hasEvent = events.some((ev) => ev.date === cellDateStr);
-
-                return (
-                  <div
-                    key={dayNum}
-                    className={`calendar-day-cell ${isToday ? 'today' : ''} ${
-                      isSelected ? 'selected' : ''
-                    }`}
-                    onClick={() => handleDateClick(dayNum)}
-                  >
-                    <div className="calendar-day-number">
-                      <span>{dayNum}</span>
-                      {hasEvent && <span className="calendar-event-dot">●</span>}
-                    </div>
-                    {isToday && <span className="today-label">Today</span>}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Selected Date Details */}
-      <div className="selected-date-card">
-        <div className="selected-date-title">Selected Date:</div>
-        <div className="selected-date-heading">{formatDisplayDate(selectedDateStr)}</div>
-
-        {selectedDateEvents.length > 0 ? (
-          <div className="event-list">
-            {selectedDateEvents.map((ev) => (
-              <div key={ev._id} className="event-item">
-                <span className="calendar-event-dot">●</span> {ev.eventName}
+          ) : (
+            <>
+              <div className="calendar-weekdays-grid">
+                {WEEKDAYS.map((day) => (
+                  <div key={day}>{day}</div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="no-events-text">No events for this date.</p>
-        )}
+
+              <div className="calendar-days-grid">
+                {/* Empty leading slots */}
+                {Array.from({ length: firstDayIndex }).map((_, idx) => (
+                  <div key={`empty-${idx}`} className="calendar-day-cell empty" />
+                ))}
+
+                {/* Days of month */}
+                {Array.from({ length: daysInMonth }).map((_, idx) => {
+                  const dayNum = idx + 1;
+                  const cellDateStr = formatDateStr(year, monthIndex, dayNum);
+                  const isToday = cellDateStr === todayStr;
+                  const isSelected = cellDateStr === selectedDateStr;
+                  const hasEvent = events.some((ev) => ev.date === cellDateStr);
+
+                  return (
+                    <div
+                      key={dayNum}
+                      className={`calendar-day-cell ${isToday ? 'today' : ''} ${
+                        isSelected ? 'selected' : ''
+                      }`}
+                      onClick={() => handleDateClick(dayNum)}
+                    >
+                      <div className="calendar-day-number">
+                        <span>{dayNum}</span>
+                        {hasEvent && <span className="calendar-event-dot">●</span>}
+                      </div>
+                      {isToday && <span className="today-label">Today</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Selected Date Details */}
+        <div className="selected-date-card">
+          <div className="selected-date-title">Selected Date:</div>
+          <div className="selected-date-heading">{formatDisplayDate(selectedDateStr)}</div>
+
+          {selectedDateEvents.length > 0 ? (
+            <div className="event-list">
+              {selectedDateEvents.map((ev) => (
+                <div key={ev._id} className="event-item">
+                  <span className="calendar-event-dot">●</span> {ev.eventName}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-events-text">No events for this date.</p>
+          )}
+        </div>
       </div>
 
       {/* Admin Add Event Modal */}
