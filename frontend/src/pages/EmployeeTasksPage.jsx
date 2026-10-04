@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import StatusBadge from '../components/StatusBadge';
 import Pagination from '../components/Pagination';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -9,13 +9,21 @@ import api from '../api/axios';
 import { CheckSquare, Search, Play, FileText, Eye, PlusCircle } from 'lucide-react';
 
 const EmployeeTasksPage = () => {
+  const [searchParams] = useSearchParams();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, pages: 1, total: 0 });
 
   // Filters
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
+
+  useEffect(() => {
+    const statusParam = searchParams.get('status');
+    if (statusParam !== null) {
+      setStatusFilter(statusParam);
+    }
+  }, [searchParams]);
 
   // Submit Work Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
