@@ -184,7 +184,10 @@ const CalendarPage = () => {
             <>
               <div className="calendar-weekdays-grid">
                 {WEEKDAYS.map((day) => (
-                  <div key={day}>{day}</div>
+                  <div key={day}>
+                    <span className="weekday-full">{day}</span>
+                    <span className="weekday-short">{day.slice(0, 3)}</span>
+                  </div>
                 ))}
               </div>
 
