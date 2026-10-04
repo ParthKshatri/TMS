@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -8,17 +8,33 @@ import {
   CalendarCheck,
   Calendar,
   History,
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleLogout = async () => {
+    onClose?.();
     await logout();
     navigate('/login');
+  };
+
+  const handleNavClick = () => {
+    onClose?.();
   };
 
   if (!user) return null;
@@ -26,14 +42,27 @@ const Sidebar = () => {
   const isAdmin = user.role === 'admin';
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div>
-          <div className="brand-title">Task Manager</div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Office Work Portal</div>
+    <>
+      <div
+        className={`sidebar-backdrop ${isOpen ? 'active' : ''}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="brand-title">Task Manager</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Office Work Portal</div>
+          </div>
+          <span className="brand-badge">{user.role}</span>
+          <button
+            className="sidebar-close-btn"
+            onClick={onClose}
+            aria-label="Close navigation menu"
+          >
+            <X size={20} />
+          </button>
         </div>
-        <span className="brand-badge">{user.role}</span>
-      </div>
 
       <nav className="sidebar-nav">
         {isAdmin ? (
@@ -41,6 +70,7 @@ const Sidebar = () => {
             <NavLink
               to="/admin/dashboard"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <LayoutDashboard size={18} />
               Dashboard
@@ -48,6 +78,7 @@ const Sidebar = () => {
             <NavLink
               to="/admin/tasks"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <CheckSquare size={18} />
               Task Management
@@ -55,6 +86,7 @@ const Sidebar = () => {
             <NavLink
               to="/admin/work-history"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <FileCheck size={18} />
               Submitted Work
@@ -62,6 +94,7 @@ const Sidebar = () => {
             <NavLink
               to="/admin/employees"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <Users size={18} />
               Employees
@@ -69,6 +102,7 @@ const Sidebar = () => {
             <NavLink
               to="/admin/attendance"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <CalendarCheck size={18} />
               Attendance History
@@ -76,6 +110,7 @@ const Sidebar = () => {
             <NavLink
               to="/admin/calendar"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <Calendar size={18} />
               Calendar
@@ -86,6 +121,7 @@ const Sidebar = () => {
             <NavLink
               to="/employee/dashboard"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <LayoutDashboard size={18} />
               Dashboard
@@ -93,6 +129,7 @@ const Sidebar = () => {
             <NavLink
               to="/employee/tasks"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <CheckSquare size={18} />
               My Tasks
@@ -100,6 +137,7 @@ const Sidebar = () => {
             <NavLink
               to="/employee/attendance"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <CalendarCheck size={18} />
               Daily Attendance
@@ -107,6 +145,7 @@ const Sidebar = () => {
             <NavLink
               to="/employee/history"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <History size={18} />
               My Activity Log
@@ -114,6 +153,7 @@ const Sidebar = () => {
             <NavLink
               to="/employee/calendar"
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
             >
               <Calendar size={18} />
               Calendar
@@ -136,6 +176,7 @@ const Sidebar = () => {
         </button>
       </div>
     </aside>
+  </>
   );
 };
 

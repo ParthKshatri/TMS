@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ProtectedRoute from './ProtectedRoute';
@@ -43,14 +43,23 @@ const getNavbarTitle = (pathname) => {
 const AppLayout = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   if (!user) return <>{children}</>;
 
   return (
     <div className="app-container">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="main-content">
-        <Navbar title={getNavbarTitle(location.pathname)} />
+        <Navbar
+          title={getNavbarTitle(location.pathname)}
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          isSidebarOpen={sidebarOpen}
+        />
         {children}
       </div>
     </div>

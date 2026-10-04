@@ -107,7 +107,7 @@ const AdminTaskDetailPage = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+      <div className="task-detail-grid">
         {/* Main Details & Work Submissions */}
         <div>
           <div className="card">
@@ -118,7 +118,7 @@ const AdminTaskDetailPage = () => {
               <p style={{ whiteSpace: 'pre-wrap', color: '#334155', lineHeight: '1.6' }}>
                 {task.description}
               </p>
-              <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '2rem', fontSize: '0.875rem', color: '#64748b' }}>
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0', display: 'flex', flexWrap: 'wrap', gap: '1rem 2rem', fontSize: '0.875rem', color: '#64748b' }}>
                 <div>
                   <strong>Created:</strong> {new Date(task.createdAt).toLocaleDateString()}
                 </div>

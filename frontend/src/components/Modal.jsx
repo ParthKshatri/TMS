@@ -20,8 +20,9 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
         <div className="modal-header">
           <h3 className="card-title">{title}</h3>
           <button
+            type="button"
+            className="modal-close-btn"
             onClick={onClose}
-            style={{ color: '#64748b', padding: '0.25rem' }}
             aria-label="Close modal"
           >
             <X size={20} />
