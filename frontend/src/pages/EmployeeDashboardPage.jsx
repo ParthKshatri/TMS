@@ -126,7 +126,7 @@ const EmployeeDashboardPage = () => {
           </div>
 
           <div className="grid-stats">
-            <div className="stat-card">
+            <Link to="/employee/tasks?status=pending" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
               <div className="stat-icon-wrapper orange">
                 <Clock size={24} />
               </div>
@@ -134,9 +134,9 @@ const EmployeeDashboardPage = () => {
                 <div className="stat-value">{stats.pending}</div>
                 <div className="stat-label">Pending Tasks</div>
               </div>
-            </div>
+            </Link>
 
-            <div className="stat-card">
+            <Link to="/employee/tasks?status=in_progress" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
               <div className="stat-icon-wrapper blue">
                 <Play size={24} />
               </div>
@@ -144,9 +144,9 @@ const EmployeeDashboardPage = () => {
                 <div className="stat-value">{stats.in_progress}</div>
                 <div className="stat-label">In Progress</div>
               </div>
-            </div>
+            </Link>
 
-            <div className="stat-card">
+            <Link to="/employee/tasks?status=completed" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
               <div className="stat-icon-wrapper purple">
                 <FileText size={24} />
               </div>
@@ -154,9 +154,9 @@ const EmployeeDashboardPage = () => {
                 <div className="stat-value">{stats.completed}</div>
                 <div className="stat-label">Submitted for Review</div>
               </div>
-            </div>
+            </Link>
 
-            <div className="stat-card">
+            <Link to="/employee/tasks?status=approved" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
               <div className="stat-icon-wrapper green">
                 <CheckCircle size={24} />
               </div>
@@ -164,7 +164,7 @@ const EmployeeDashboardPage = () => {
                 <div className="stat-value">{stats.approved}</div>
                 <div className="stat-label">Approved Tasks</div>
               </div>
-            </div>
+            </Link>
           </div>
 
           <div className="card">

@@ -6,6 +6,7 @@ import {
   FileCheck,
   Users,
   CalendarCheck,
+  Calendar,
   History,
   LogOut
 } from 'lucide-react';
@@ -72,6 +73,13 @@ const Sidebar = () => {
               <CalendarCheck size={18} />
               Attendance History
             </NavLink>
+            <NavLink
+              to="/admin/calendar"
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            >
+              <Calendar size={18} />
+              Calendar
+            </NavLink>
           </>
         ) : (
           <>
@@ -102,6 +110,13 @@ const Sidebar = () => {
             >
               <History size={18} />
               My Activity Log
+            </NavLink>
+            <NavLink
+              to="/employee/calendar"
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            >
+              <Calendar size={18} />
+              Calendar
             </NavLink>
           </>
         )}

@@ -4,6 +4,7 @@ const userRoutes = require('./userRoutes');
 const taskRoutes = require('./taskRoutes');
 const workRoutes = require('./workRoutes');
 const attendanceRoutes = require('./attendanceRoutes');
+const calendarRoutes = require('./calendarRoutes');
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/users', userRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/work-submissions', workRoutes);
 router.use('/attendance', attendanceRoutes);
+router.use('/calendar', calendarRoutes);
 
 module.exports = router;

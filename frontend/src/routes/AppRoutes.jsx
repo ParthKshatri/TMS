@@ -20,6 +20,7 @@ import EmployeeTasksPage from '../pages/EmployeeTasksPage';
 import EmployeeTaskDetailPage from '../pages/EmployeeTaskDetailPage';
 import EmployeeAttendancePage from '../pages/EmployeeAttendancePage';
 import EmployeeHistoryPage from '../pages/EmployeeHistoryPage';
+import CalendarPage from '../pages/CalendarPage';
 
 const getNavbarTitle = (pathname) => {
   if (pathname.includes('/admin/dashboard')) return 'Admin Overview';
@@ -28,12 +29,14 @@ const getNavbarTitle = (pathname) => {
   if (pathname.includes('/admin/employees')) return 'Employee Accounts';
   if (pathname.includes('/admin/attendance')) return 'Attendance Logs';
   if (pathname.includes('/admin/work-history')) return 'Submitted Work';
+  if (pathname.includes('/admin/calendar')) return 'Office Calendar';
   
   if (pathname.includes('/employee/dashboard')) return 'Employee Workspace';
   if (pathname.includes('/employee/tasks/')) return 'Task Detail & Work Submission';
   if (pathname.includes('/employee/tasks')) return 'My Assigned Tasks';
   if (pathname.includes('/employee/attendance')) return 'Daily Attendance';
   if (pathname.includes('/employee/history')) return 'My Activity History';
+  if (pathname.includes('/employee/calendar')) return 'Office Calendar';
   return 'Dashboard';
 };
 
@@ -75,6 +78,7 @@ const AppRoutes = () => {
           <Route path="/admin/employees" element={<AdminEmployeesPage />} />
           <Route path="/admin/attendance" element={<AdminAttendancePage />} />
           <Route path="/admin/work-history" element={<AdminWorkHistoryPage />} />
+          <Route path="/admin/calendar" element={<CalendarPage />} />
         </Route>
 
         {/* Employee Routes */}
@@ -84,6 +88,7 @@ const AppRoutes = () => {
           <Route path="/employee/tasks/:id" element={<EmployeeTaskDetailPage />} />
           <Route path="/employee/attendance" element={<EmployeeAttendancePage />} />
           <Route path="/employee/history" element={<EmployeeHistoryPage />} />
+          <Route path="/employee/calendar" element={<CalendarPage />} />
         </Route>
 
         {/* Catch-all fallback */}

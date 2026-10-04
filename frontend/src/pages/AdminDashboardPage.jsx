@@ -105,7 +105,7 @@ const AdminDashboardPage = () => {
               </div>
               <div className="stat-info">
                 <div className="stat-value">{stats.todayAttendance}</div>
-                <div className="stat-label">Today Attendance Logs</div>
+                <div className="stat-label">Total Attendance Logs</div>
               </div>
             </div>
           </div>
