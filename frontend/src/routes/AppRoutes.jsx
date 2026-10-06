@@ -5,6 +5,9 @@ import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
+import PwaUpdatePrompt from '../components/PwaUpdatePrompt';
+
+const BottomNav = React.lazy(() => import('../components/BottomNav'));
 
 // Pages
 import LoginPage from '../pages/LoginPage';
@@ -61,6 +64,10 @@ const AppLayout = ({ children }) => {
           isSidebarOpen={sidebarOpen}
         />
         {children}
+        <React.Suspense fallback={null}>
+          <BottomNav />
+        </React.Suspense>
+        <PwaUpdatePrompt />
       </div>
     </div>
   );

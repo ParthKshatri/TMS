@@ -1,0 +1,51 @@
+@media (max-width: 768px) {
+  .standalone-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background-color: #0f172a;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 100;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .standalone-bottom-bar__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    min-height: 48px;
+    min-width: 44px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.725rem;
+    font-weight: 500;
+    transition: color 0.15s ease;
+  }
+
+  .standalone-bottom-bar__item--active {
+    color: #ea580c;
+  }
+
+  .standalone-bottom-bar__label {
+    line-height: 1;
+  }
+
+  /* Add padding to page container when bottom bar is active in standalone mode */
+  body:has(.standalone-bottom-bar) .main-content {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Hide duplicate top navigation links on mobile standalone only */
+  body:has(.standalone-bottom-bar) .sidebar-nav {
+    display: none;
+  }
+}
