@@ -203,14 +203,14 @@ const AdminTasksPage = () => {
               <tbody>
                 {tasks.map((task) => (
                   <tr key={task._id}>
-                    <td style={{ fontWeight: '600' }}>{task.title}</td>
-                    <td>{task.assignee?.name || 'Unassigned'}</td>
-                    <td>
+                    <td data-label="Task Title" style={{ fontWeight: '600' }}>{task.title}</td>
+                    <td data-label="Assignee">{task.assignee?.name || 'Unassigned'}</td>
+                    <td data-label="Status">
                       <StatusBadge status={task.status} />
                     </td>
-                    <td>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No limit'}</td>
-                    <td>{new Date(task.createdAt).toLocaleDateString()}</td>
-                    <td>
+                    <td data-label="Due Date">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No limit'}</td>
+                    <td data-label="Created Date">{new Date(task.createdAt).toLocaleDateString()}</td>
+                    <td data-label="Action">
                       <Link to={`/admin/tasks/${task._id}`} className="btn btn-secondary btn-sm">
                         View detail
                       </Link>

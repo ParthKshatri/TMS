@@ -273,8 +273,8 @@ const EmployeeAttendancePage = () => {
                 <tbody>
                   {records.map((rec) => (
                     <tr key={rec._id}>
-                      <td style={{ fontWeight: '600' }}>{rec.date}</td>
-                      <td>
+                      <td data-label="Date" style={{ fontWeight: '600' }}>{rec.date}</td>
+                      <td data-label="Clock In">
                         {new Date(rec.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                           In: <StatusBadge status={rec.clockInStatus || 'approved'} />
@@ -285,7 +285,7 @@ const EmployeeAttendancePage = () => {
                           )}
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Clock Out">
                         {rec.logoutTime ? (
                           <>
                             {new Date(rec.logoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -302,7 +302,7 @@ const EmployeeAttendancePage = () => {
                           'Active Shift'
                         )}
                       </td>
-                      <td>
+                      <td data-label="Status">
                         <StatusBadge
                           status={
                             rec.clockInStatus === 'pending' || rec.clockOutStatus === 'pending'
@@ -313,7 +313,7 @@ const EmployeeAttendancePage = () => {
                           }
                         />
                       </td>
-                      <td>{calculateDuration(rec)}</td>
+                      <td data-label="Shift Duration">{calculateDuration(rec)}</td>
                     </tr>
                   ))}
                 </tbody>

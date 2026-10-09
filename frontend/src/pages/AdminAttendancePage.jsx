@@ -228,16 +228,16 @@ const AdminAttendancePage = () => {
 
                       return (
                         <tr key={`${req._id}-${item.type}`}>
-                          <td style={{ fontWeight: '600' }}>
+                          <td data-label="Employee" style={{ fontWeight: '600' }}>
                             {req.employee?.name || 'Unknown'}
                             <div style={{ fontSize: '0.775rem', color: '#64748b' }}>{req.employee?.email}</div>
                           </td>
-                          <td>{req.date}</td>
-                          <td>
+                          <td data-label="Date">{req.date}</td>
+                          <td data-label="Request Type">
                             <span className="status-badge pending">{item.label} Request</span>
                           </td>
-                          <td>{new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                          <td>
+                          <td data-label="Logged Time">{new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                          <td data-label="Actions">
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                               <button
                                 className="btn btn-primary btn-sm"
@@ -339,18 +339,18 @@ const AdminAttendancePage = () => {
                 <tbody>
                   {records.map((rec) => (
                     <tr key={rec._id}>
-                      <td style={{ fontWeight: '600' }}>
+                      <td data-label="Employee Name" style={{ fontWeight: '600' }}>
                         {rec.employee?.name || 'Unknown'}
                         <div style={{ fontSize: '0.775rem', color: '#64748b' }}>{rec.employee?.email}</div>
                       </td>
-                      <td>{rec.date}</td>
-                      <td>
+                      <td data-label="Date">{rec.date}</td>
+                      <td data-label="Clock In">
                         {new Date(rec.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                           In: <StatusBadge status={rec.clockInStatus || 'approved'} />
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Clock Out">
                         {rec.logoutTime ? (
                           <>
                             {new Date(rec.logoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -362,7 +362,7 @@ const AdminAttendancePage = () => {
                           'Active Shift'
                         )}
                       </td>
-                      <td>
+                      <td data-label="Status">
                         <StatusBadge
                           status={
                             rec.clockInStatus === 'pending' || rec.clockOutStatus === 'pending'
@@ -373,7 +373,7 @@ const AdminAttendancePage = () => {
                           }
                         />
                       </td>
-                      <td>{calculateDuration(rec)}</td>
+                      <td data-label="Shift Duration">{calculateDuration(rec)}</td>
                     </tr>
                   ))}
                 </tbody>
