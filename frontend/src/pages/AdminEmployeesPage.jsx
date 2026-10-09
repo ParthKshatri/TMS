@@ -157,15 +157,15 @@ const AdminEmployeesPage = () => {
               <tbody>
                 {employees.map((emp) => (
                   <tr key={emp._id}>
-                    <td style={{ fontWeight: '600' }}>{emp.name}</td>
-                    <td>{emp.email}</td>
-                    <td>
+                    <td data-label="Employee Name" style={{ fontWeight: '600' }}>{emp.name}</td>
+                    <td data-label="Email Address">{emp.email}</td>
+                    <td data-label="Account Status">
                       <span className={`status-badge ${emp.isActive ? 'approved' : 'rejected'}`}>
                         {emp.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td>{new Date(emp.createdAt).toLocaleDateString()}</td>
-                    <td>
+                    <td data-label="Created Date">{new Date(emp.createdAt).toLocaleDateString()}</td>
+                    <td data-label="Actions">
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <button
                           className="btn btn-secondary btn-sm"

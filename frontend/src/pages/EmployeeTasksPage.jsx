@@ -196,12 +196,12 @@ const EmployeeTasksPage = () => {
               <tbody>
                 {tasks.map((task) => (
                   <tr key={task._id}>
-                    <td style={{ fontWeight: '600' }}>{task.title}</td>
-                    <td>
+                    <td data-label="Task Title" style={{ fontWeight: '600' }}>{task.title}</td>
+                    <td data-label="Current Status">
                       <StatusBadge status={task.status} />
                     </td>
-                    <td>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No limit'}</td>
-                    <td>
+                    <td data-label="Due Date">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No limit'}</td>
+                    <td data-label="Actions">
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <Link to={`/employee/tasks/${task._id}`} className="btn btn-secondary btn-sm">
                           <Eye size={14} />

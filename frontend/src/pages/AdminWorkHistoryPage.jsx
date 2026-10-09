@@ -151,16 +151,16 @@ const AdminWorkHistoryPage = () => {
               <tbody>
                 {submissions.map((sub) => (
                   <tr key={sub._id}>
-                    <td style={{ fontWeight: '600' }}>{sub.task?.title || 'Untitled Task'}</td>
-                    <td>{sub.employee?.name || 'Unknown'}</td>
-                    <td style={{ maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <td data-label="Task Title" style={{ fontWeight: '600' }}>{sub.task?.title || 'Untitled Task'}</td>
+                    <td data-label="Employee">{sub.employee?.name || 'Unknown'}</td>
+                    <td data-label="Description" style={{ maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {sub.description}
                     </td>
-                    <td>{new Date(sub.submittedAt).toLocaleDateString()}</td>
-                    <td>
+                    <td data-label="Submitted Date">{new Date(sub.submittedAt).toLocaleDateString()}</td>
+                    <td data-label="Status">
                       <StatusBadge status={sub.reviewStatus} />
                     </td>
-                    <td>
+                    <td data-label="Actions">
                       {sub.reviewStatus === 'pending' ? (
                         <div style={{ display: 'flex', gap: '0.4rem' }}>
                           <button

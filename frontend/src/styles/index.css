@@ -848,16 +848,61 @@ img, video, canvas, svg {
     font-size: 0.775rem;
   }
 
-  /* Data tables */
+  /* Data tables - Solution A: Mobile Stacked Cards */
   .table-container {
-    border-radius: var(--radius-md);
+    overflow-x: visible;
+    border: none;
+    background: transparent;
     -webkit-overflow-scrolling: touch;
   }
 
-  .custom-table th, .custom-table td {
-    padding: 0.75rem 0.85rem;
+  .custom-table, .custom-table tbody, .custom-table tr, .custom-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .custom-table thead {
+    display: none;
+  }
+
+  .custom-table tr {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.85rem;
+    padding: 0.85rem 1rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .custom-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
     font-size: 0.85rem;
-    white-space: nowrap;
+    text-align: right;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .custom-table td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    padding-top: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  .custom-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 0.775rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-align: left;
+    padding-right: 0.75rem;
+    flex-shrink: 0;
   }
 
   /* Modals */

@@ -83,13 +83,13 @@ const EmployeeHistoryPage = () => {
               <tbody>
                 {submissions.map((sub) => (
                   <tr key={sub._id}>
-                    <td style={{ fontWeight: '600' }}>{sub.task?.title || 'Untitled Task'}</td>
-                    <td style={{ maxWidth: '300px', whiteSpace: 'pre-wrap' }}>{sub.description}</td>
-                    <td>{new Date(sub.submittedAt).toLocaleDateString()}</td>
-                    <td>
+                    <td data-label="Task Title" style={{ fontWeight: '600' }}>{sub.task?.title || 'Untitled Task'}</td>
+                    <td data-label="Work Description" style={{ maxWidth: '300px', whiteSpace: 'pre-wrap' }}>{sub.description}</td>
+                    <td data-label="Submitted Date">{new Date(sub.submittedAt).toLocaleDateString()}</td>
+                    <td data-label="Review Status">
                       <StatusBadge status={sub.reviewStatus} />
                     </td>
-                    <td>{sub.reviewRemark || 'No feedback provided'}</td>
+                    <td data-label="Admin Feedback">{sub.reviewRemark || 'No feedback provided'}</td>
                   </tr>
                 ))}
               </tbody>
