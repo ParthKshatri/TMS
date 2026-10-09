@@ -195,12 +195,12 @@ const EmployeeDashboardPage = () => {
                   ) : (
                     tasks.map((task) => (
                       <tr key={task._id}>
-                        <td style={{ fontWeight: '600' }}>{task.title}</td>
-                        <td>
+                        <td data-label="Task Title" style={{ fontWeight: '600' }}>{task.title}</td>
+                        <td data-label="Status">
                           <StatusBadge status={task.status} />
                         </td>
-                        <td>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No limit'}</td>
-                        <td>
+                        <td data-label="Due Date">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No limit'}</td>
+                        <td data-label="Action">
                           <Link to={`/employee/tasks/${task._id}`} className="btn btn-secondary btn-sm">
                             View detail
                           </Link>

@@ -850,15 +850,17 @@ img, video, canvas, svg {
 
   /* Data tables - Solution A: Mobile Stacked Cards */
   .table-container {
-    overflow-x: visible;
+    overflow-x: hidden;
     border: none;
     background: transparent;
-    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    width: 100%;
   }
 
   .custom-table, .custom-table tbody, .custom-table tr, .custom-table td {
     display: block;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .custom-table thead {
@@ -872,18 +874,24 @@ img, video, canvas, svg {
     margin-bottom: 0.85rem;
     padding: 0.85rem 1rem;
     box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
+    width: 100%;
   }
 
   .custom-table td {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
+    padding: 0.6rem 0;
     border-bottom: 1px solid #f1f5f9;
     font-size: 0.85rem;
     text-align: right;
     white-space: normal;
     word-break: break-word;
+    gap: 0.75rem;
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
   }
 
   .custom-table td:last-child {
@@ -897,12 +905,37 @@ img, video, canvas, svg {
     content: attr(data-label);
     font-weight: 600;
     color: var(--color-text-muted);
-    font-size: 0.775rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
     text-align: left;
-    padding-right: 0.75rem;
+    padding-right: 0.5rem;
     flex-shrink: 0;
+    max-width: 45%;
+  }
+
+  .custom-table td:not([data-label])::before,
+  .custom-table td[data-label=""]::before {
+    display: none;
+  }
+
+  /* Wrap action button containers nicely within card width */
+  .custom-table td > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .custom-table td > div .btn {
+    flex: 1 1 auto;
+    min-height: 38px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.825rem;
+    justify-content: center;
+    white-space: nowrap;
   }
 
   /* Modals */

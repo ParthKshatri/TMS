@@ -139,13 +139,13 @@ const AdminDashboardPage = () => {
                   ) : (
                     recentTasks.map((t) => (
                       <tr key={t._id}>
-                        <td style={{ fontWeight: '500' }}>{t.title}</td>
-                        <td>{t.assignee?.name || 'Unassigned'}</td>
-                        <td>
+                        <td data-label="Task Title" style={{ fontWeight: '500' }}>{t.title}</td>
+                        <td data-label="Assignee">{t.assignee?.name || 'Unassigned'}</td>
+                        <td data-label="Status">
                           <StatusBadge status={t.status} />
                         </td>
-                        <td>{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'No limit'}</td>
-                        <td>
+                        <td data-label="Due Date">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'No limit'}</td>
+                        <td data-label="Action">
                           <Link to={`/admin/tasks/${t._id}`} className="btn btn-secondary btn-sm">
                             View detail
                           </Link>
