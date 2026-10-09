@@ -1,9 +1,16 @@
 import React from 'react';
-import { Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = ({ title = 'Dashboard', onToggleSidebar, isSidebarOpen }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <header className="navbar">
@@ -44,6 +51,28 @@ const Navbar = ({ title = 'Dashboard', onToggleSidebar, isSidebarOpen }) => {
         >
           {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
         </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="navbar-logout-btn"
+          title="Log out"
+          aria-label="Log out"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '36px',
+            height: '36px',
+            borderRadius: '8px',
+            color: '#64748b',
+            backgroundColor: '#f1f5f9',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
+          }}
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </header>
   );

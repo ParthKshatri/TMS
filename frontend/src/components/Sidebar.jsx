@@ -242,9 +242,21 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span className="user-role">{user.email}</span>
           </div>
           <button
+            type="button"
             onClick={handleLogout}
-            style={{ color: '#94a3b8', padding: '0.4rem' }}
+            className="sidebar-logout-btn"
+            style={{
+              color: '#94a3b8',
+              padding: '0.5rem',
+              borderRadius: '6px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
             title="Log out"
+            aria-label="Log out"
           >
             <LogOut size={18} />
           </button>
