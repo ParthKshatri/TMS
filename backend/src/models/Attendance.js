@@ -18,6 +18,38 @@ const attendanceSchema = new mongoose.Schema(
     },
     logoutTime: {
       type: Date
+    },
+    clockInStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'approved'
+    },
+    clockOutStatus: {
+      type: String,
+      enum: ['none', 'pending', 'approved', 'rejected'],
+      default: 'approved'
+    },
+    clockInApprovedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    clockInDecidedAt: {
+      type: Date
+    },
+    clockInRejectionReason: {
+      type: String,
+      trim: true
+    },
+    clockOutApprovedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    clockOutDecidedAt: {
+      type: Date
+    },
+    clockOutRejectionReason: {
+      type: String,
+      trim: true
     }
   },
   {
@@ -28,5 +60,7 @@ const attendanceSchema = new mongoose.Schema(
 // Enforce one attendance record per employee per day
 attendanceSchema.index({ employee: 1, date: 1 }, { unique: true });
 attendanceSchema.index({ date: -1 });
+attendanceSchema.index({ clockInStatus: 1 });
+attendanceSchema.index({ clockOutStatus: 1 });
 
 module.exports = mongoose.model('Attendance', attendanceSchema);

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api/axios';
+import api, { setAccessToken, setOnLogoutCallback } from '../api/axios';
 
 const AuthContext = createContext(null);
 
@@ -8,16 +8,19 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const checkAuthStatus = async () => {
+  const initAuth = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/auth/me');
-      if (res.data.success) {
+      const res = await api.post('/auth/refresh');
+      if (res.data && res.data.success && res.data.accessToken) {
+        setAccessToken(res.data.accessToken);
         setUser(res.data.user);
       } else {
+        setAccessToken(null);
         setUser(null);
       }
     } catch (err) {
+      setAccessToken(null);
       setUser(null);
     } finally {
       setLoading(false);
@@ -25,7 +28,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    checkAuthStatus();
+    setOnLogoutCallback(() => {
+      setUser(null);
+      setAccessToken(null);
+    });
+
+    initAuth();
   }, []);
 
   const login = async (email, password) => {
@@ -33,6 +41,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const res = await api.post('/auth/login', { email, password });
       if (res.data.success) {
+        setAccessToken(res.data.accessToken);
         setUser(res.data.user);
         return { success: true, user: res.data.user };
       }
@@ -48,14 +57,15 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post('/auth/logout');
     } catch (err) {
-      console.error('Logout error:', err);
+      // Ignore logout API failure
     } finally {
+      setAccessToken(null);
       setUser(null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, logout, refreshUser: checkAuthStatus }}>
+    <AuthContext.Provider value={{ user, loading, error, login, logout, refreshUser: initAuth }}>
       {children}
     </AuthContext.Provider>
   );

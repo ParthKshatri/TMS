@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import Pagination from '../components/Pagination';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
+import StatusBadge from '../components/StatusBadge';
 import api from '../api/axios';
 import { Clock, CalendarCheck } from 'lucide-react';
 
-const calculateDuration = (login, logout) => {
-  if (!login || !logout) return 'In Progress';
-  const start = new Date(login).getTime();
-  const end = new Date(logout).getTime();
+const calculateDuration = (rec) => {
+  if (!rec.loginTime || !rec.logoutTime) return 'In Progress';
+  if (rec.clockInStatus !== 'approved' || rec.clockOutStatus !== 'approved') {
+    return 'Pending Approval';
+  }
+  const start = new Date(rec.loginTime).getTime();
+  const end = new Date(rec.logoutTime).getTime();
   const diffMinutes = Math.floor((end - start) / (1000 * 60));
   const hours = Math.floor(diffMinutes / 60);
   const mins = diffMinutes % 60;
@@ -100,6 +104,84 @@ const EmployeeAttendancePage = () => {
     }
   };
 
+  const renderTodayAction = () => {
+    if (!todayAttendance) {
+      return {
+        title: 'Shift Not Started',
+        color: '#0f172a',
+        desc: 'Click Clock in to request today shift start time.',
+        button: (
+          <button className="btn btn-primary" onClick={handleClockIn} disabled={actionLoading}>
+            <Clock size={18} />
+            Clock in now
+          </button>
+        )
+      };
+    }
+
+    const { clockInStatus, clockOutStatus, loginTime, logoutTime, clockInRejectionReason, clockOutRejectionReason } = todayAttendance;
+
+    if (clockInStatus === 'pending') {
+      return {
+        title: 'Clock-in Pending Approval',
+        color: '#d97706',
+        desc: `Requested at ${new Date(loginTime).toLocaleTimeString()}. Waiting for administrator approval.`,
+        button: <StatusBadge status="pending" />
+      };
+    }
+
+    if (clockInStatus === 'rejected') {
+      return {
+        title: 'Clock-in Request Rejected',
+        color: '#dc2626',
+        desc: `Rejection reason: ${clockInRejectionReason || 'Rejected by administrator'}`,
+        button: <StatusBadge status="rejected" />
+      };
+    }
+
+    // Clock in is approved
+    if (!logoutTime && (clockOutStatus === 'none' || !clockOutStatus)) {
+      return {
+        title: 'Active Work Shift',
+        color: '#16a34a',
+        desc: `Clocked in at ${new Date(loginTime).toLocaleTimeString()} (Approved).`,
+        button: (
+          <button className="btn btn-secondary" onClick={handleClockOut} disabled={actionLoading}>
+            <Clock size={18} />
+            Clock out now
+          </button>
+        )
+      };
+    }
+
+    if (clockOutStatus === 'pending') {
+      return {
+        title: 'Clock-out Pending Approval',
+        color: '#d97706',
+        desc: `Clocked out at ${new Date(logoutTime).toLocaleTimeString()}. Waiting for administrator approval.`,
+        button: <StatusBadge status="pending" />
+      };
+    }
+
+    if (clockOutStatus === 'rejected') {
+      return {
+        title: 'Clock-out Request Rejected',
+        color: '#dc2626',
+        desc: `Rejection reason: ${clockOutRejectionReason || 'Rejected by administrator'}`,
+        button: <StatusBadge status="rejected" />
+      };
+    }
+
+    return {
+      title: 'Shift Complete',
+      color: '#2563eb',
+      desc: `Clocked in: ${new Date(loginTime).toLocaleTimeString()} | Clocked out: ${new Date(logoutTime).toLocaleTimeString()}`,
+      button: <StatusBadge status="approved" />
+    };
+  };
+
+  const actionState = renderTodayAction();
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -125,53 +207,14 @@ const EmployeeAttendancePage = () => {
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
               <div>
-                {!todayAttendance ? (
-                  <div>
-                    <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#0f172a' }}>
-                      Shift Not Started
-                    </h4>
-                    <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
-                      Click Clock in to start recording your login time for today.
-                    </p>
-                  </div>
-                ) : !todayAttendance.logoutTime ? (
-                  <div>
-                    <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#16a34a' }}>
-                      Active Work Shift
-                    </h4>
-                    <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
-                      Clocked in at <strong>{new Date(todayAttendance.loginTime).toLocaleTimeString()}</strong>
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2563eb' }}>
-                      Shift Complete
-                    </h4>
-                    <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
-                      Clocked in: {new Date(todayAttendance.loginTime).toLocaleTimeString()} | Clocked out: {new Date(todayAttendance.logoutTime).toLocaleTimeString()}
-                    </p>
-                  </div>
-                )}
+                <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: actionState.color }}>
+                  {actionState.title}
+                </h4>
+                <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
+                  {actionState.desc}
+                </p>
               </div>
-
-              <div>
-                {!todayAttendance ? (
-                  <button className="btn btn-primary" onClick={handleClockIn} disabled={actionLoading}>
-                    <Clock size={18} />
-                    Clock in now
-                  </button>
-                ) : !todayAttendance.logoutTime ? (
-                  <button className="btn btn-secondary" onClick={handleClockOut} disabled={actionLoading}>
-                    <Clock size={18} />
-                    Clock out now
-                  </button>
-                ) : (
-                  <span className="status-badge approved" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-                    Recorded for Today
-                  </span>
-                )}
-              </div>
+              <div>{actionState.button}</div>
             </div>
           )}
         </div>
@@ -221,8 +264,9 @@ const EmployeeAttendancePage = () => {
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Clock In Time</th>
-                    <th>Clock Out Time</th>
+                    <th>Clock In</th>
+                    <th>Clock Out</th>
+                    <th>Status</th>
                     <th>Shift Duration</th>
                   </tr>
                 </thead>
@@ -230,13 +274,46 @@ const EmployeeAttendancePage = () => {
                   {records.map((rec) => (
                     <tr key={rec._id}>
                       <td style={{ fontWeight: '600' }}>{rec.date}</td>
-                      <td>{new Date(rec.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                       <td>
-                        {rec.logoutTime
-                          ? new Date(rec.logoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                          : 'Active Shift'}
+                        {new Date(rec.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                          In: <StatusBadge status={rec.clockInStatus || 'approved'} />
+                          {rec.clockInRejectionReason && (
+                            <div style={{ color: '#dc2626', marginTop: '2px' }}>
+                              Reason: {rec.clockInRejectionReason}
+                            </div>
+                          )}
+                        </div>
                       </td>
-                      <td>{calculateDuration(rec.loginTime, rec.logoutTime)}</td>
+                      <td>
+                        {rec.logoutTime ? (
+                          <>
+                            {new Date(rec.logoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                              Out: <StatusBadge status={rec.clockOutStatus || 'approved'} />
+                              {rec.clockOutRejectionReason && (
+                                <div style={{ color: '#dc2626', marginTop: '2px' }}>
+                                  Reason: {rec.clockOutRejectionReason}
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          'Active Shift'
+                        )}
+                      </td>
+                      <td>
+                        <StatusBadge
+                          status={
+                            rec.clockInStatus === 'pending' || rec.clockOutStatus === 'pending'
+                              ? 'pending'
+                              : rec.clockInStatus === 'rejected' || rec.clockOutStatus === 'rejected'
+                              ? 'rejected'
+                              : 'approved'
+                          }
+                        />
+                      </td>
+                      <td>{calculateDuration(rec)}</td>
                     </tr>
                   ))}
                 </tbody>
