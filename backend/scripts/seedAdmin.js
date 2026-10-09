@@ -31,11 +31,6 @@ const seedAdmin = async () => {
           name: process.env.SEED_ADMIN_NAME || 'Primary Administrator',
           email: process.env.SEED_ADMIN_EMAIL || 'admin@tms.local',
           password: process.env.SEED_ADMIN_PASSWORD || 'AdminPassword123!'
-        },
-        {
-          name: process.env.SEED_ADMIN_2_NAME || 'Secondary Administrator',
-          email: process.env.SEED_ADMIN_2_EMAIL || 'admin2@tms.local',
-          password: process.env.SEED_ADMIN_2_PASSWORD || 'AdminPassword123!'
         }
       ];
     }
@@ -53,25 +48,36 @@ const seedAdmin = async () => {
         continue;
       }
 
-      const existingAdmin = await User.findOne({ email });
+      let finalEmail = email;
+      let finalName = name;
+
+      const existingAdmin = await User.findOne({ email: finalEmail });
       if (existingAdmin) {
-        console.log(`Admin account (${email}) already exists. Skipping.`);
-        skippedCount++;
-        continue;
+        const parts = email.split('@');
+        const username = parts[0];
+        const domain = parts[1] || 'tms.local';
+        let counter = 1;
+        
+        while (await User.findOne({ email: finalEmail })) {
+          finalEmail = `${username}${counter}@${domain}`;
+          finalName = `${name} ${counter}`;
+          counter++;
+        }
+        console.log(`Base admin (${email}) already exists. Creating new admin with email: ${finalEmail}`);
       }
 
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
       await User.create({
-        name,
-        email,
+        name: finalName,
+        email: finalEmail,
         passwordHash,
         role: 'admin',
         isActive: true
       });
 
-      console.log(`Admin account successfully seeded: ${email} (${name})`);
+      console.log(`Admin account successfully seeded: ${finalEmail} (${finalName})`);
       createdCount++;
     }
 
