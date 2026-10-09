@@ -3,7 +3,7 @@ const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const createSessionConfig = require('./config/session');
+const cookieParser = require('cookie-parser');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -39,12 +39,10 @@ app.use(
   })
 );
 
-// Body parsers
+// Body parsers & Cookie parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Session middleware
-app.use(createSessionConfig());
+app.use(cookieParser());
 
 // Mount API routes
 app.use('/api', routes);

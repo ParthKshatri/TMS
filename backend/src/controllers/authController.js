@@ -1,5 +1,21 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  hashToken
+} = require('../utils/jwt');
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/'
+});
 
 const login = async (req, res, next) => {
   try {
@@ -28,48 +44,118 @@ const login = async (req, res, next) => {
       });
     }
 
-    req.session.userId = user._id;
-    req.session.userRole = user.role;
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
-    // Explicit session save
-    req.session.save((err) => {
-      if (err) return next(err);
-      res.json({
-        success: true,
-        message: 'Login successful.',
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          isActive: user.isActive,
-          createdAt: user.createdAt
-        }
-      });
+    user.refreshTokenHash = hashToken(refreshToken);
+    await user.save();
+
+    res.cookie('refreshToken', refreshToken, getCookieOptions());
+
+    res.json({
+      success: true,
+      message: 'Login successful.',
+      accessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt
+      }
     });
   } catch (error) {
     next(error);
   }
 };
 
-const logout = (req, res, next) => {
-  if (!req.session) {
-    return res.json({ success: true, message: 'Logged out successfully.' });
-  }
-
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({
+const refresh = async (req, res, next) => {
+  try {
+    const incomingToken = req.cookies.refreshToken;
+    if (!incomingToken) {
+      return res.status(401).json({
         success: false,
-        message: 'Failed to destroy session.'
+        message: 'Refresh token missing.'
       });
     }
-    res.clearCookie('connect.sid');
+
+    let decoded;
+    try {
+      decoded = verifyRefreshToken(incomingToken);
+    } catch (err) {
+      res.clearCookie('refreshToken', getCookieOptions());
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired refresh token.'
+      });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user || !user.isActive || user.refreshTokenHash !== hashToken(incomingToken)) {
+      res.clearCookie('refreshToken', getCookieOptions());
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or revoked refresh token.'
+      });
+    }
+
+    // Rotate refresh token
+    const accessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+
+    user.refreshTokenHash = hashToken(newRefreshToken);
+    await user.save();
+
+    res.cookie('refreshToken', newRefreshToken, getCookieOptions());
+
+    res.json({
+      success: true,
+      accessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const logout = async (req, res, next) => {
+  try {
+    const incomingToken = req.cookies.refreshToken;
+    if (incomingToken) {
+      try {
+        const decoded = verifyRefreshToken(incomingToken);
+        const user = await User.findById(decoded.id);
+        if (user && user.refreshTokenHash === hashToken(incomingToken)) {
+          user.refreshTokenHash = null;
+          await user.save();
+        }
+      } catch (err) {
+        // Token already invalid/expired, ignore user lookup error
+      }
+    } else if (req.user) {
+      const user = await User.findById(req.user._id);
+      if (user) {
+        user.refreshTokenHash = null;
+        await user.save();
+      }
+    }
+
+    res.clearCookie('refreshToken', getCookieOptions());
     return res.json({
       success: true,
       message: 'Logged out successfully.'
     });
-  });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const getMe = async (req, res) => {
@@ -88,6 +174,7 @@ const getMe = async (req, res) => {
 
 module.exports = {
   login,
+  refresh,
   logout,
   getMe
 };

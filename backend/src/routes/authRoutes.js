@@ -28,7 +28,8 @@ router.post(
   authController.login
 );
 
-router.post('/logout', requireAuth, authController.logout);
+router.post('/refresh', authController.refresh);
+router.post('/logout', authController.logout);
 router.get('/me', requireAuth, authController.getMe);
 
 module.exports = router;
