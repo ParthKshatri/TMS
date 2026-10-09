@@ -4,7 +4,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background-color: #0f172a;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -20,15 +20,17 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 2px;
     flex: 1;
-    min-height: 48px;
-    min-width: 44px;
+    min-height: 44px;
+    min-width: 0;
+    padding: 2px 1px;
     color: #94a3b8;
     text-decoration: none;
-    font-size: 0.725rem;
+    font-size: 0.65rem;
     font-weight: 500;
     transition: color 0.15s ease;
+    overflow: hidden;
   }
 
   .standalone-bottom-bar__item--active {
@@ -37,15 +39,14 @@
 
   .standalone-bottom-bar__label {
     line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
-  /* Add padding to page container when bottom bar is active in standalone mode */
-  body:has(.standalone-bottom-bar) .main-content {
+  /* Add padding to main content when bottom bar is active on mobile */
+  .main-content {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-  }
-
-  /* Hide duplicate top navigation links on mobile standalone only */
-  body:has(.standalone-bottom-bar) .sidebar-nav {
-    display: none;
   }
 }

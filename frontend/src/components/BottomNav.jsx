@@ -14,30 +14,24 @@ import '../styles/BottomNav.css';
 
 const BottomNav = () => {
   const { user } = useAuth();
-  const [isStandaloneMobile, setIsStandaloneMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const mediaDisplay = window.matchMedia('(display-mode: standalone)');
     const mediaMobile = window.matchMedia('(max-width: 768px)');
 
     const updateState = () => {
-      const standalone = mediaDisplay.matches || Boolean(window.navigator.standalone);
-      const mobile = mediaMobile.matches;
-      setIsStandaloneMobile(standalone && mobile);
+      setIsMobile(mediaMobile.matches);
     };
 
     updateState();
-
-    mediaDisplay.addEventListener('change', updateState);
     mediaMobile.addEventListener('change', updateState);
 
     return () => {
-      mediaDisplay.removeEventListener('change', updateState);
       mediaMobile.removeEventListener('change', updateState);
     };
   }, []);
 
-  if (!isStandaloneMobile || !user) return null;
+  if (!isMobile || !user) return null;
 
   const isAdmin = user.role === 'admin';
 
@@ -47,6 +41,7 @@ const BottomNav = () => {
         { to: '/admin/tasks', label: 'Tasks', icon: CheckSquare },
         { to: '/admin/work-history', label: 'Work', icon: FileCheck },
         { to: '/admin/employees', label: 'Employees', icon: Users },
+        { to: '/admin/attendance', label: 'Attendance', icon: CalendarCheck },
         { to: '/admin/calendar', label: 'Calendar', icon: Calendar }
       ]
     : [
@@ -69,7 +64,7 @@ const BottomNav = () => {
               `standalone-bottom-bar__item ${isActive ? 'standalone-bottom-bar__item--active' : ''}`
             }
           >
-            <Icon size={20} />
+            <Icon size={19} />
             <span className="standalone-bottom-bar__label">{item.label}</span>
           </NavLink>
         );
