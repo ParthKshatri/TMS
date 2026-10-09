@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -8,13 +8,65 @@ import {
   CalendarCheck,
   Calendar,
   History,
-  LogOut
+  LogOut,
+  Download
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Modal from './Modal';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  useEffect(() => {
+    const isStandaloneMode =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      Boolean(window.navigator.standalone);
+    setIsStandalone(isStandaloneMode);
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      window.deferredPwaPrompt = e;
+    };
+
+    const handleAppInstalled = () => {
+      setIsStandalone(true);
+      window.deferredPwaPrompt = null;
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleDownloadClick = () => {
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmDownload = async () => {
+    setShowConfirmModal(false);
+    const promptEvent = window.deferredPwaPrompt;
+
+    if (promptEvent) {
+      try {
+        promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          setIsStandalone(true);
+        }
+        window.deferredPwaPrompt = null;
+      } catch (err) {
+        console.error('PWA install error:', err);
+      }
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -120,6 +172,28 @@ const Sidebar = () => {
             </NavLink>
           </>
         )}
+
+        {!isStandalone && (
+          <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+            <button
+              type="button"
+              className="nav-item"
+              onClick={handleDownloadClick}
+              style={{
+                width: '100%',
+                border: '1px solid rgba(234, 88, 12, 0.3)',
+                background: 'rgba(234, 88, 12, 0.08)',
+                color: '#ea580c',
+                fontWeight: '600',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <Download size={18} />
+              Download App
+            </button>
+          </div>
+        )}
       </nav>
 
       <div className="sidebar-footer">
@@ -135,6 +209,33 @@ const Sidebar = () => {
           <LogOut size={18} />
         </button>
       </div>
+
+      {/* Download Verification Modal */}
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title="Download Task Manager App"
+        footer={
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', width: '100%' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={handleConfirmDownload}
+            >
+              Yes, Download
+            </button>
+          </div>
+        }
+      >
+        <p style={{ color: '#334155', fontSize: '0.925rem', lineHeight: '1.5', margin: 0 }}>
+          Do you want to download and install the Task Manager app on your device for fast access and shift logs?
+        </p>
+      </Modal>
     </aside>
   );
 };
