@@ -290,7 +290,7 @@ const AdminEmployeesPage = () => {
               <p style={{ color: '#64748b', fontSize: '0.875rem' }}>{selectedUserStats.user.email}</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="modal-stats-grid">
               <div style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '10px', backgroundColor: '#f8fafc' }}>
                 <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>{selectedUserStats.stats.totalTasks}</div>
                 <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Assigned Tasks</div>

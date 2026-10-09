@@ -36,28 +36,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f8fafc',
-        padding: '1.5rem'
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '420px',
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)',
-          padding: '2.5rem 2rem'
-        }}
-      >
-        <div style={{ textTransform: 'center', marginBottom: '2rem', textAlign: 'center' }}>
+    <div className="login-container">
+      <div className="login-card">
+        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
           <h1 style={{ fontSize: '1.6rem', color: '#0f172a', fontWeight: '700' }}>
             Office Work Portal
           </h1>
