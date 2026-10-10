@@ -1,6 +1,7 @@
 const Task = require('../models/Task');
 const TaskStatusHistory = require('../models/TaskStatusHistory');
 const User = require('../models/User');
+const { sendTaskAssignmentEmail } = require('../utils/mailer');
 
 const createTask = async (req, res, next) => {
   try {
@@ -62,6 +63,18 @@ const createTask = async (req, res, next) => {
     const populatedTasks = await Task.find({ _id: { $in: createdTaskIds } })
       .populate('assignee', 'name email')
       .populate('createdBy', 'name email');
+
+    // Send task assignment emails in the background without blocking the response
+    for (const task of populatedTasks) {
+      if (task.assignee && task.assignee.email) {
+        sendTaskAssignmentEmail({
+          task,
+          assigneeName: task.assignee.name,
+          assigneeEmail: task.assignee.email,
+          assignedByName: req.user.name || task.createdBy?.name || 'Administrator'
+        }).catch(() => {});
+      }
+    }
 
     res.status(201).json({
       success: true,

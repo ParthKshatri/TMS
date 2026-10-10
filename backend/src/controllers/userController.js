@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Task = require('../models/Task');
 const Attendance = require('../models/Attendance');
 const WorkSubmission = require('../models/WorkSubmission');
+const { sendCredentialsEmail } = require('../utils/mailer');
 
 const getEmployees = async (req, res, next) => {
   try {
@@ -61,6 +62,13 @@ const createEmployee = async (req, res, next) => {
       role: 'employee',
       isActive: true
     });
+
+    // Send credentials email in the background without blocking the response
+    sendCredentialsEmail({
+      name: newEmployee.name,
+      email: newEmployee.email,
+      password
+    }).catch(() => {});
 
     res.status(201).json({
       success: true,
