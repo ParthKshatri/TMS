@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import Modal from '../components/Modal';
 import api from '../api/axios';
-import { Plus, Search, Users, Eye, UserX, UserCheck } from 'lucide-react';
+import { Plus, Search, Users, Eye, UserX, UserCheck, Trash2 } from 'lucide-react';
 
 const AdminEmployeesPage = () => {
   const [employees, setEmployees] = useState([]);
@@ -13,6 +13,10 @@ const AdminEmployeesPage = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, pages: 1, total: 0 });
   const [search, setSearch] = useState('');
   const [togglingId, setTogglingId] = useState(null);
+
+  // Delete employee confirmation
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Create employee modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,6 +102,27 @@ const AdminEmployeesPage = () => {
       }
     } catch (err) {
       console.error('Failed to load user stats:', err);
+    }
+  };
+
+  const handleDeleteEmployee = async () => {
+    if (!employeeToDelete) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await api.delete(`/users/${employeeToDelete._id}`);
+      if (res.data.success) {
+        setEmployees((prev) => prev.filter((emp) => emp._id !== employeeToDelete._id));
+        setPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+        if (selectedUserStats && selectedUserStats.user._id === employeeToDelete._id) {
+          setSelectedUserStats(null);
+        }
+        setEmployeeToDelete(null);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete employee account.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -196,6 +221,28 @@ const AdminEmployeesPage = () => {
                           {emp.isActive ? <UserX size={15} /> : <UserCheck size={15} />}
                           {togglingId === emp._id ? 'Updating...' : emp.isActive ? 'Disable Account' : 'Enable Account'}
                         </button>
+
+                        <button
+                          className="btn btn-sm"
+                          style={{
+                            padding: '0.35rem 0.65rem',
+                            fontSize: '0.8rem',
+                            borderRadius: 'var(--radius-sm)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            fontWeight: '500',
+                            border: '1px solid #fca5a5',
+                            color: '#ffffff',
+                            backgroundColor: '#dc2626',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => setEmployeeToDelete(emp)}
+                          title={`Delete ${emp.name}'s account permanently`}
+                        >
+                          <Trash2 size={15} />
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -270,6 +317,48 @@ const AdminEmployeesPage = () => {
             />
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Employee Confirmation Modal */}
+      <Modal
+        isOpen={!!employeeToDelete}
+        onClose={() => !isDeleting && setEmployeeToDelete(null)}
+        title="Delete Employee Account"
+        footer={
+          <>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setEmployeeToDelete(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              className="btn"
+              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+              onClick={handleDeleteEmployee}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+            </button>
+          </>
+        }
+      >
+        {employeeToDelete && (
+          <div>
+            <p style={{ fontSize: '0.9rem', color: '#334155', lineHeight: '1.6' }}>
+              Are you sure you want to permanently delete the account of{' '}
+              <strong>{employeeToDelete.name}</strong> ({employeeToDelete.email})?
+            </p>
+            <div
+              className="alert-banner alert-error"
+              style={{ marginTop: '1rem' }}
+            >
+              This action cannot be undone. All tasks assigned to this employee, work
+              submissions, and attendance records will also be permanently deleted.
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* User Stats Modal */}
