@@ -26,5 +26,6 @@ router.post(
 
 router.get('/:id', userController.getUserDetails);
 router.patch('/:id/status', userController.toggleEmployeeStatus);
+router.delete('/:id', userController.deleteEmployee);
 
 module.exports = router;

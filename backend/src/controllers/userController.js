@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Task = require('../models/Task');
+const TaskStatusHistory = require('../models/TaskStatusHistory');
 const Attendance = require('../models/Attendance');
 const WorkSubmission = require('../models/WorkSubmission');
 const { sendCredentialsEmail } = require('../utils/mailer');
@@ -158,9 +159,78 @@ const toggleEmployeeStatus = async (req, res, next) => {
   }
 };
 
+const deleteEmployee = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found.'
+      });
+    }
+
+    if (user.role !== 'employee') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only employee accounts can be deleted.'
+      });
+    }
+
+    if (req.user && String(req.user._id) === String(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot delete your own account.'
+      });
+    }
+
+    // Cascade cleanup so no orphaned records reference the deleted user.
+    const assignedTasks = await Task.find({ assignee: id }).select('_id');
+    const assignedTaskIds = assignedTasks.map((task) => task._id);
+
+    const [attendanceResult, workSubmissionResult, historyByTaskResult] = await Promise.all([
+      Attendance.deleteMany({ employee: id }),
+      WorkSubmission.deleteMany({
+        $or: [
+          { employee: id },
+          ...(assignedTaskIds.length > 0 ? [{ task: { $in: assignedTaskIds } }] : [])
+        ]
+      }),
+      assignedTaskIds.length > 0
+        ? TaskStatusHistory.deleteMany({ task: { $in: assignedTaskIds } })
+        : Promise.resolve({ deletedCount: 0 })
+    ]);
+
+    const taskResult = assignedTaskIds.length > 0
+      ? await Task.deleteMany({ assignee: id })
+      : { deletedCount: 0 };
+
+    // History entries the employee created on other tasks (if any).
+    const historyByUserResult = await TaskStatusHistory.deleteMany({ changedBy: id });
+
+    await User.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: `Employee account (${user.email}) deleted successfully.`,
+      deleted: {
+        attendanceRecords: attendanceResult.deletedCount || 0,
+        workSubmissions: workSubmissionResult.deletedCount || 0,
+        tasks: taskResult.deletedCount || 0,
+        taskHistoryEntries:
+          (historyByTaskResult.deletedCount || 0) + (historyByUserResult.deletedCount || 0)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEmployees,
   createEmployee,
   getUserDetails,
-  toggleEmployeeStatus
+  toggleEmployeeStatus,
+  deleteEmployee
 };
