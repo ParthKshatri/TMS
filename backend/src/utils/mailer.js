@@ -110,7 +110,7 @@ async function sendMail({ to, subject, html, text }) {
  * @param {string} params.password - Plaintext password (in-memory only)
  */
 async function sendCredentialsEmail({ name, email, password }) {
-  const loginUrl = process.env.APP_LOGIN_URL || `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/login`;
+  const loginUrl = process.env.APP_LOGIN_URL || `${process.env.CLIENT_ORIGIN || 'https://tms-eight-iota.vercel.app'}/login`;
   const recipientName = name || 'Employee';
   const safeName = escapeHtml(recipientName);
   const safeEmail = escapeHtml(email);
